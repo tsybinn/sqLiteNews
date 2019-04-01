@@ -17,6 +17,9 @@ class NewsDB implements INewsDB {
         {
             $this->_db = new SQLite3(self::DB_NAME);
             if( filesize(self::DB_NAME) == 0){
+                try{
+
+
 
                 $sql = "CREATE TABLE msgs(
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -40,7 +43,11 @@ UNION SELECT 2 as id, 'Культура' as name
 UNION SELECT 3 as id, 'Спорт' as name ";
              $this ->_db->exec($sql) or die($this->_db->lastErrorMsg());
 
+                } catch (Exception $e){
 
+
+
+                }
 
 
 
@@ -75,11 +82,32 @@ UNION SELECT 3 as id, 'Спорт' as name ";
 
         function getNews()
         {
+            $sql = "SELECT msgs.id as id,title,category.name as category,description,source, datetime
+            FROM msgs, category WHERE category.id = msgs.category
+            ORDER BY msgs.id DESC;
+            ";
+
+            $res = $this->_db->query($sql);
+    if (!$res)return false;
+    return $this->db2Arr($res);
 
         }
 
         function deleteNews($id)
         {
+
+
+
+
+
+                $sql = "DELETE 
+				FROM msgs WHERE id=$id";
+            return $this->_db->exec($sql);
+
+                header('news.php');
+
+
+
 
         }
 
@@ -87,6 +115,17 @@ UNION SELECT 3 as id, 'Спорт' as name ";
      * @param $data
      * @return mixed
      */
+     private function db2Arr($data){
+         $arr = [];
+
+         while($row = $data->fetchArray(SQLITE3_ASSOC) )
+             $arr[] = $row;
+
+         return $arr;
+
+
+     }
+
     function clearStr($data){
         $data = strip_tags($data);
         return $this->_db->escapeString($data);
